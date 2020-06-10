@@ -10,6 +10,9 @@ pub fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
 
 #[command]
 pub fn help(ctx: &mut Context, msg: &Message) -> CommandResult {
+    
+    dbg!(&msg);
+    
     msg.channel_id
         .say(&ctx.http, "Hello I am Heisenberg the bot")?;
     Ok(())
