@@ -1,30 +1,23 @@
-use std::env;
-use serenity::{
-    model::{
-        channel::{
-            Message, 
-            Reaction, 
-            ReactionType
-        },
-        gateway::{
-            Activity,
-            ActivityEmoji,
-            Ready
-        }, 
-        event::ResumedEvent,
-        user::OnlineStatus,
-    },
-    prelude::*,
-};
+use serenity::client::{Client, Context, EventHandler};
+use serenity::framework::standard::macros::group;
+use serenity::framework::standard::StandardFramework;
+use serenity::model::channel::{Reaction, ReactionType};
+use serenity::model::{event::ResumedEvent, gateway::Ready};
 
+use std::env;
+mod commands;
+
+use commands::{meta::*, quizz::*};
+
+#[group]
+#[commands(ping, help, quizz)]
+struct General;
 
 struct Handler;
 
 impl EventHandler for Handler {
-
     // says a message whenever a reaction is made
     fn reaction_add(&self, ctx: Context, reaction: Reaction) {
-
         dbg!(&reaction);
 
         if let Err(why) = reaction.channel_id.say(
@@ -47,58 +40,7 @@ impl EventHandler for Handler {
         }
     }
 
-
-    fn message(&self, context: Context, msg: Message) {
-
-        dbg!(&msg);
-
-        if msg.content.starts_with("$show") {
-            let term = msg.content.split_ascii_whitespace().last().unwrap();
-            
-            let emoji = match term.to_ascii_lowercase().as_ref() {
-                "avocado" => "🥑",
-                "crab" =>  "🦀",
-                "snake" =>  "🐍",
-                _ => "❌",
-            };
-
-            if let Err(reason) = msg.channel_id.say(&context.http, &emoji) {
-                println!("Error happened: {:?}", reason);
-            }
-
-        }
-        
-        if msg.content == "!message" {
-
-            let dm = msg.author.dm(&context, |m| {
-                m.content("Hello!");
-                let myreactions = vec!["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
-                m.reactions(myreactions);
-                m
-            });
-
-            match dm {
-                Ok(_) => {
-                    let _ = msg.react(&context, "✅");
-                },
-                Err(why) => {
-                    println!("Err sending help: {:?}", why);
-
-                    let _ = msg.reply(&context, "There was an error DMing you help.");
-                },
-            };
-            // if let Err(why) = dm {
-            //     println!("Error when direct messaging user: {:?}", why);
-            // }
-        }
-    }
-
-    fn ready(&self, ctx: Context, ready: Ready) {
-        let mut activity = Activity::playing("🎓 $help for help");
-        activity.emoji = Some(ActivityEmoji{name: "🎓".to_string(), id: None, animated: None});
-        let status = OnlineStatus::Online;
-
-        ctx.set_presence(Some(activity), status);
+    fn ready(&self, _: Context, ready: Ready) {
         println!("Connected as {}", ready.user.name);
     }
 
@@ -108,12 +50,13 @@ impl EventHandler for Handler {
 }
 
 fn main() {
-    // Configure the client with your Discord bot token in the environment.
-    let token = env::var("DISCORD_TOKEN")
-        .expect("Expected a token in the environment");
+    let mut client = Client::new(&env::var("DISCORD_TOKEN").unwrap(), Handler).unwrap();
 
-    let mut client = Client::new(&token, Handler)
-        .expect("Err creating client");
+    client.with_framework(
+        StandardFramework::new()
+            .configure(|c| c.prefix("$"))
+            .group(&GENERAL_GROUP),
+    );
 
     if let Err(why) = client.start() {
         println!("Client error: {:?}", why);
