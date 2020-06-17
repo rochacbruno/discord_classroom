@@ -1,21 +1,27 @@
 use serenity::client::{Client, Context, EventHandler};
 use serenity::framework::standard::macros::group;
 use serenity::framework::standard::StandardFramework;
-use serenity::model::channel::{Reaction, ReactionType};
+use serenity::model::channel::{Message, Reaction, ReactionType};
 use serenity::model::{event::ResumedEvent, gateway::Ready};
 
 use std::env;
+// mod db;
 mod commands;
-
-use commands::{meta::*, quizz::*};
+use commands::{meta::*, quizz::*, runtask::*};
 
 #[group]
-#[commands(ping, help, quizz)]
+#[commands(ping, help, quizz, runtask)]
 struct General;
 
 struct Handler;
 
 impl EventHandler for Handler {
+
+    // fn message(&self, ctx: Context, msg: Message) {
+    //     println!("Message Handler");
+    //     dbg!(msg);
+    // }
+
     // says a message whenever a reaction is made
     fn reaction_add(&self, ctx: Context, reaction: Reaction) {
         dbg!(&reaction);
