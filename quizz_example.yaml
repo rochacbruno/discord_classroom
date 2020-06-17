@@ -1,0 +1,23 @@
+---
+tasks:
+  - name: Delete a quiz 45646
+    quizz:
+      delete:
+        _id: ad54654564
+  
+  - name: Add quiz first
+    quizz:
+      insert:
+        title: Hello this is the first quizz
+        slug: hello-this-is-the-first-quizz
+        active: true
+        required: true
+        questions:
+        - title: What is the output of the following code?
+          text: "`print(True + True)`"
+          options:
+          - text: "`TypeError:`"
+            correct: false
+          - text: "`2`"
+            correct: true
+          grade: 10
